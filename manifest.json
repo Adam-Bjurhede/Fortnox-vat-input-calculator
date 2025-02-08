@@ -1,0 +1,15 @@
+{
+	"manifest_version": 3,
+	"name": "VAT Calculator Input",
+	"version": "1.0",
+	"description": "Adds calculator functionality to the VAT input field.",
+	"permissions": ["activeTab"],
+	"content_scripts": [
+	  {
+		"matches": ["https://apps5.fortnox.se/*"],
+		"js": ["index.js"],
+		"run_at": "document_end"
+	  }
+	]
+  }
+  
