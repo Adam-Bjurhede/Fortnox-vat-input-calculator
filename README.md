@@ -1,15 +1,41 @@
 # fortnox-calc
 
-To install dependencies:
+A Chrome extension to add VAT calculation functionality.
 
-```bash
-bun install
+## How to Install the Plugin
+
+1. Download the ZIP file.
+2. Extract the contents.
+3. Open Chrome.
+4. Go to `chrome://extensions/`.
+5. Click on "Load unpacked".
+6. Select the extracted extension folder.
+7. Activate the plugin.
+
+## Local Development
+
+### Prerequisites
+
+To set up the project for local development, you need to have [Bun](https://bun.sh/) installed.
+
+### Installing Bun
+
+You can install Bun using the following command:
+
+```sh
+curl -fsSL https://bun.sh/install | bash
 ```
 
-To run:
+### Running Scripts
 
-```bash
-bun run index.ts
+To run the development server:
+
+```sh
+bun run dev
 ```
 
-This project was created using `bun init` in bun v1.2.2. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+To build the project:
+
+```sh
+bun run build
+```
