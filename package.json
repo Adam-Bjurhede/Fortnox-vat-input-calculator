@@ -1,0 +1,15 @@
+{
+  "name": "fortnox-calc",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun build ./index.ts --watch --outdir extension --target browser",
+    "build": "bun build ./index.ts --outdir extension --target browser"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
