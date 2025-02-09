@@ -1,4 +1,5 @@
 function addCalculatorFunctionality(vatField: HTMLInputElement) {
+    vatField.style.borderBlockColor = 'orange'
 	vatField.addEventListener('keydown', ({ key }: KeyboardEvent) => {
 		if (key === 'Enter') {
 			const value = vatField.value.trim();
@@ -15,55 +16,88 @@ function addCalculatorFunctionality(vatField: HTMLInputElement) {
 	console.log("Calculator attached to VAT field!");
 }
 
-function calculateExpression(expression: string): number | string | null {
-	try {
-		// Normalize input: replace commas with dots and remove spaces
-		expression = expression.replace(/,/g, '.').replace(/\s+/g, '');
+function calculateExpression(expression: string): number | null {
+    try {
+        // Input validation
+        if (typeof expression !== 'string') {
+            console.error("Invalid input type");
+            return null;
+        }
 
-		// Split numbers and operators (e.g., "24.22+99-1/6" → ["24.22", "+", "99", "-", "1", "/", "6"])
-		const parts = expression.match(/(\d+(\.\d+)?|[-+*/])/g);
+        // Normalize input: replace commas with dots and remove spaces
+        expression = expression.replace(/,/g, '.').replace(/\s+/g, '');
 
-		if (!parts) return null;
+        // Validate expression format
+        if (!/^[\d.+\-*/]+$/.test(expression)) {
+            console.error("Invalid characters in expression");
+            return null;
+        }
 
-		// Convert numbers from strings to floats
-		const numbers: number[] = [];
-		const operators: string[] = [];
+        // Split numbers and operators with proper regex
+        const parts = expression.match(/(\d+(\.\d+)?|[-+*/])/g);
 
-		parts.forEach(part => {
-			if (!isNaN(parseFloat(part))) {
-				numbers.push(parseFloat(part));
-			} else {
-				operators.push(part);
-			}
-		});
+        if (!parts || parts.length < 1) {
+            console.error("Invalid expression format");
+            return null;
+        }
 
-		// Step 1: Process * and /
-		for (let i = 0; i < operators.length; i++) {
-			if (operators[i] === '*' || operators[i] === '/') {
-				const a = numbers[i];
-				const b = numbers[i + 1];
-				if (operators[i] === '/' && b === 0) return 'Error';
+        // Validate that expression starts and ends with numbers
+        if (isOperator(parts[0]) || isOperator(parts[parts.length - 1])) {
+            console.error("Expression cannot start or end with operator");
+            return null;
+        }
 
-				numbers.splice(i, 2, operators[i] === '*' ? a * b : a / b);
-				operators.splice(i, 1);
-				i--; // Adjust index after modification
-			}
-		}
+        const numbers: number[] = [];
+        const operators: string[] = [];
 
-		// Step 2: Process + and -
-		let result = numbers[0];
-		for (let i = 0; i < operators.length; i++) {
-			if (operators[i] === '+') result += numbers[i + 1];
-			if (operators[i] === '-') result -= numbers[i + 1];
-		}
+        parts.forEach(part => {
+            if (!isNaN(parseFloat(part))) {
+                numbers.push(parseFloat(part));
+            } else if (isOperator(part)) {
+                operators.push(part);
+            }
+        });
 
-		return result;
-	} catch (error) {
-		console.error("Calculation error:", error);
-		return null;
-	}
+        // Validate operators and numbers count
+        if (numbers.length !== operators.length + 1) {
+            console.error("Invalid expression structure");
+            return null;
+        }
+
+        // Step 1: Process * and /
+        for (let i = 0; i < operators.length; i++) {
+            if (operators[i] === '*' || operators[i] === '/') {
+                const a = numbers[i];
+                const b = numbers[i + 1];
+                
+                if (operators[i] === '/' && b === 0) {
+                    console.error("Division by zero");
+                    return null;
+                }
+
+                numbers.splice(i, 2, operators[i] === '*' ? a * b : a / b);
+                operators.splice(i, 1);
+                i--; // Adjust index after modification
+            }
+        }
+
+        // Step 2: Process + and -
+        let result = numbers[0];
+        for (let i = 0; i < operators.length; i++) {
+            if (operators[i] === '+') result += numbers[i + 1];
+            if (operators[i] === '-') result -= numbers[i + 1];
+        }
+
+        return isFinite(result) ? result : null;
+    } catch (error) {
+        console.error("Calculation error:", error);
+        return null;
+    }
 }
 
+function isOperator(char: string): boolean {
+    return ['+', '-', '*', '/'].includes(char);
+}
 
 function observeIframe() {
 	const observer = new MutationObserver(() => {
