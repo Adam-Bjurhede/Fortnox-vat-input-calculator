@@ -1,8 +1,6 @@
 const operators = ['-', '+', '*', '/'];
 
 function addCalculatorFunctionality(vatField: HTMLInputElement) {
-	if (!vatField) return
-
 	vatField.addEventListener('keydown', ({key}: KeyboardEvent) => {
 		if (key === 'Enter') {
 			const value = vatField.value.trim()
@@ -35,39 +33,39 @@ function addCalculatorFunctionality(vatField: HTMLInputElement) {
 	console.log("Calculator attached to VAT field!");
 }
 
-function getIframe() {
-	const iframe = document.getElementById('iframeApp') as HTMLIFrameElement;
+function observeIframe() {
+    const observer = new MutationObserver(() => {
+		console.log('Observing for Iframe')
+		const iframe = document.getElementById('iframeApp') as HTMLIFrameElement;
+        if (iframe) {
+            observer.disconnect()
+            iframe.addEventListener('load', () => initIframe(iframe));
+        }
+    });
 
-	if (!iframe) {
-		console.log("Waiting for iframe...");
-		setTimeout(getIframe, 500); // Retry after 500ms
-		return;
-	}
+    observer.observe(document.body, { childList: true, subtree: true });
+}
 
-	// Listen for the load event of the iframe
-	iframe.addEventListener('load', function () {
-		initIframe(iframe);
-	});
+function observeVatField(iframeDoc: Document) {
+    const observer = new MutationObserver(() => {
+		console.log('Observing for VAT input')
+
+        const vatField = iframeDoc.getElementById('form-supplierinvoice-vat') as HTMLInputElement;
+
+        if (vatField) {
+            observer.disconnect()
+            addCalculatorFunctionality(vatField);
+        }
+    });
+
+    observer.observe(iframeDoc.body, { childList: true, subtree: true })
 }
 
 function initIframe(iframe: HTMLIFrameElement) {
-	const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-
-	// Check if the iframe's document is loaded
-	if (!iframeDoc) {
-		console.log("Waiting for iframe document...")
-		setTimeout(() => initIframe(iframe), 500)
-		return;
-	}
-
-	const input = iframeDoc.getElementById('form-supplierinvoice-vat') as HTMLInputElement;
-	if (!input) {
-		console.log("Waiting for vatInput...")
-		setTimeout(() => initIframe(iframe), 500)
-		return;
-	}
-
-	addCalculatorFunctionality(input)
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (iframeDoc) {
+        observeVatField(iframeDoc);
+    }
 }
 
-getIframe();
+observeIframe();

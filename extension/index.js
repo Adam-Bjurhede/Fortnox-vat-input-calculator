@@ -1,8 +1,6 @@
 // index.ts
 var operators = ["-", "+", "*", "/"];
 function addCalculatorFunctionality(vatField) {
-  if (!vatField)
-    return;
   vatField.addEventListener("keydown", ({ key }) => {
     if (key === "Enter") {
       const value = vatField.value.trim();
@@ -38,30 +36,32 @@ function addCalculatorFunctionality(vatField) {
   });
   console.log("Calculator attached to VAT field!");
 }
-function getIframe() {
-  const iframe = document.getElementById("iframeApp");
-  if (!iframe) {
-    console.log("Waiting for iframe...");
-    setTimeout(getIframe, 500);
-    return;
-  }
-  iframe.addEventListener("load", function() {
-    initIframe(iframe);
+function observeIframe() {
+  const observer = new MutationObserver(() => {
+    console.log("Observing for Iframe");
+    const iframe = document.getElementById("iframeApp");
+    if (iframe) {
+      observer.disconnect();
+      iframe.addEventListener("load", () => initIframe(iframe));
+    }
   });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+function observeVatField(iframeDoc) {
+  const observer = new MutationObserver(() => {
+    console.log("Observing for VAT input");
+    const vatField = iframeDoc.getElementById("form-supplierinvoice-vat");
+    if (vatField) {
+      observer.disconnect();
+      addCalculatorFunctionality(vatField);
+    }
+  });
+  observer.observe(iframeDoc.body, { childList: true, subtree: true });
 }
 function initIframe(iframe) {
   const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-  if (!iframeDoc) {
-    console.log("Waiting for iframe document...");
-    setTimeout(() => initIframe(iframe), 500);
-    return;
+  if (iframeDoc) {
+    observeVatField(iframeDoc);
   }
-  const input = iframeDoc.getElementById("form-supplierinvoice-vat");
-  if (!input) {
-    console.log("Waiting for vatInput...");
-    setTimeout(() => initIframe(iframe), 500);
-    return;
-  }
-  addCalculatorFunctionality(input);
 }
-getIframe();
+observeIframe();
